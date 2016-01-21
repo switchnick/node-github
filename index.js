@@ -419,7 +419,7 @@ var Client = module.exports = function(config) {
             this.auth = false;
             return;
         }
-        if (!options.type || "basic|oauth|client|token".indexOf(options.type) === -1)
+        if (!options.type || "basic|oauth|client|token|2fa".indexOf(options.type) === -1)
             throw new Error("Invalid authentication type, must be 'basic', 'oauth' or 'client'");
         if (options.type == "basic" && (!options.username || !options.password))
             throw new Error("Basic authentication requires both a username and password to be set");
@@ -728,6 +728,11 @@ var Client = module.exports = function(config) {
                     headers.authorization = "token " + this.auth.token;
                     break;
                 case "basic":
+                    basic = new Buffer(this.auth.username + ":" + this.auth.password, "ascii").toString("base64");
+                    headers.authorization = "Basic " + basic;
+                    break;
+                case "2fa":
+                    headers["X-GitHub-OTP"] = this.auth.code;
                     basic = new Buffer(this.auth.username + ":" + this.auth.password, "ascii").toString("base64");
                     headers.authorization = "Basic " + basic;
                     break;
