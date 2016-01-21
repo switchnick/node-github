@@ -745,7 +745,7 @@ var Client = module.exports = function(config) {
             if (callback) {
                 var cb = callback;
                 callback = undefined;
-                cb(err, result);
+                cb.call(null, err, result);
             }
         }
 
@@ -795,7 +795,17 @@ var Client = module.exports = function(config) {
                 });
                 res.on("end", function() {
                     if (res.statusCode >= 400 && res.statusCode < 600 || res.statusCode < 10) {
-                        callCallback(new error.HttpError(data, res.statusCode));
+                        if(res.statusCode==401){
+                          if(res.headers['x-github-otp']){
+                            callCallback({code: 9999});
+                          }
+                          else {
+                            callCallback(new error.HttpError(data, res.statusCode));
+                          }
+                        }
+                        else{
+                          callCallback(new error.HttpError(data, res.statusCode));
+                        }
                     } else {
                         res.data = data;
                         callCallback(null, res);
